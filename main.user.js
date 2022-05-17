@@ -16,17 +16,19 @@
     const langs = {
         // The span stuff in the regexes prevents a bug where the notification text would get replaced recursively
         // The key must correspond to the lang attribute on the html tag
-        pl: {
+        "pl-PL": {
             video:        /(?:.*<\/span>)?Na kanał (?<channel>.*?) został przesłany film (?<title>.*)/,
             live:         /(?:.*<\/span>)?(?<channel>.*?) nadaje: (?<title>.*)/,
             premiere:     /(?:.*<\/span>)?Na kanale (?<channel>.*?) trwa premiera filmu: (?<title>.*)/,
-            commentReply: /(?:.*<\/span>)?(?<channel>.*?) replied: (?<title>.*)/,
+            commentReply: /(?:.*<\/span>)?(?<user>.*?) odpowiedział\(a\): (?<comment>.*)/,
+            commentLike:  /(?:.*<\/span>)?👍 Ktoś polubił Twój komentarz: (?<comment>.*)/,
         },
-        en: {
+        "en": {
             video:        /(?:.*<\/span>)?(?<channel>.*?) uploaded: (?<title>.*)/,
             live:         /(?:.*<\/span>)?(?<channel>.*?) is live: (?<title>.*)/,
             premiere:     /(?:.*<\/span>)?(?<channel>.*?) premiering now: (?<title>.*)/,
-            commentReply: /(?:.*<\/span>)?(?<channel>.*?) replied: (?<title>.*)/,
+            commentReply: /(?:.*<\/span>)?(?<user>.*?) replied: (?<comment>.*)/,
+            commentLike:  /(?:.*<\/span>)?👍 Someone liked your comment: (?<comment>.*)/,
         },
     };
 
@@ -81,7 +83,8 @@ html[dark="true"] .notif-wording_channel-name {
                 el.innerHTML = el.innerHTML.replace(langs[siteLang].video,        `<span class="notif-wording_wrapper"><strong class="notif-wording_channel-name">$<channel></strong>: $<title></span>`);
                 el.innerHTML = el.innerHTML.replace(langs[siteLang].live,         `<span class="notif-wording_wrapper">🔴 <strong class="notif-wording_channel-name">$<channel></strong>: $<title></span>`);
                 el.innerHTML = el.innerHTML.replace(langs[siteLang].premiere,     `<span class="notif-wording_wrapper">🎦 <strong class="notif-wording_channel-name">$<channel></strong>: $<title></span>`); // Alternative emojis: 🗓️📹
-                // el.innerHTML = el.innerHTML.replace(langs[siteLang].commentReply, `<span class="notif-wording_wrapper">💬 <strong class="notif-wording_channel-name">$<channel></strong>: $<title></span>`);
+                // el.innerHTML = el.innerHTML.replace(langs[siteLang].commentReply, `<span class="notif-wording_wrapper">💬 <strong class="notif-wording_channel-name">$<user></strong>: $<comment></span>`);
+                // el.innerHTML = el.innerHTML.replace(langs[siteLang].commentLike,  `<span class="notif-wording_wrapper">💬👍 $<comment></span>`);
 
                 // Youtube goes crazy when the notification text gets changed, and adds text from different notifications to existing notification elements. This works around that.
                 if (el.children.length > 1) {
