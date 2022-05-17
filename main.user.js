@@ -15,19 +15,26 @@
 
     const langs = {
         // The span stuff in the regexes prevents a bug where the notification text would get replaced recursively
+        // The key must correspond to the lang attribute on the html tag
         pl: {
-            video: /(?:.*<\/span>)?Na kanał (?<channel>.*?) został przesłany film (?<title>.*)/,
-            live: /(?:.*<\/span>)?(?<channel>.*?) nadaje: (?<title>.*)/,
-            premiere: /(?:.*<\/span>)?Na kanale (?<channel>.*?) trwa premiera filmu: (?<title>.*)/,
+            video:        /(?:.*<\/span>)?Na kanał (?<channel>.*?) został przesłany film (?<title>.*)/,
+            live:         /(?:.*<\/span>)?(?<channel>.*?) nadaje: (?<title>.*)/,
+            premiere:     /(?:.*<\/span>)?Na kanale (?<channel>.*?) trwa premiera filmu: (?<title>.*)/,
+            commentReply: /(?:.*<\/span>)?(?<channel>.*?) replied: (?<title>.*)/,
         },
         en: {
-            video: /(?:.*<\/span>)?(?<channel>.*?) uploaded: (?<title>.*)/,
-            live: /(?:.*<\/span>)?(?<channel>.*?) is live: (?<title>.*)/,
-            premiere: /(?:.*<\/span>)?(?<channel>.*?) premiering now: (?<title>.*)/,
+            video:        /(?:.*<\/span>)?(?<channel>.*?) uploaded: (?<title>.*)/,
+            live:         /(?:.*<\/span>)?(?<channel>.*?) is live: (?<title>.*)/,
+            premiere:     /(?:.*<\/span>)?(?<channel>.*?) premiering now: (?<title>.*)/,
+            commentReply: /(?:.*<\/span>)?(?<channel>.*?) replied: (?<title>.*)/,
         },
     };
 
-    let siteLang;
+    let siteLang = document.getElementsByTagName("html")[0].getAttribute("lang");
+    if (!(siteLang in langs)) {
+        console.error(`Language ${siteLang} is not supported.`);
+        return;
+    }
 
     document.head.insertAdjacentHTML("beforeend",
 `<style>
@@ -58,7 +65,6 @@ html[dark="true"] .notif-wording_channel-name {
                 // let listHtml = list.querySelector("#items").innerHTML;
                 let listWrapper = list.querySelector("tp-yt-iron-dropdown");
                 new MutationObserver((mutations, observer) => {
-                    console.log("style mutation");
                     if (listWrapper.style.display === "none") {
                         // Surprisingly  removing the HTML works. JK it doesn't
                         list.querySelector("#items").innerHTML = "";
@@ -72,17 +78,10 @@ html[dark="true"] .notif-wording_channel-name {
             for (let el of elList) {
                 weMutatedDom = true;
 
-                // Figure out the language being used
-                if (!siteLang) {
-                    for (let [langName, lang] of Object.entries(langs)) {
-                        if (Object.values(lang).some(re => re.test(el.innerHTML)))
-                            siteLang = langName;
-                    }
-                }
-
-                el.innerHTML = el.innerHTML.replace(langs[siteLang].video,    `<span class="notif-wording_wrapper"><strong class="notif-wording_channel-name">$<channel></strong>: $<title></span>`);
-                el.innerHTML = el.innerHTML.replace(langs[siteLang].live,     `<span class="notif-wording_wrapper">🔴 <strong class="notif-wording_channel-name">$<channel></strong>: $<title></span>`);
-                el.innerHTML = el.innerHTML.replace(langs[siteLang].premiere, `<span class="notif-wording_wrapper">🎦 <strong class="notif-wording_channel-name">$<channel></strong>: $<title></span>`); // Alternative emojis: 🗓️📹
+                el.innerHTML = el.innerHTML.replace(langs[siteLang].video,        `<span class="notif-wording_wrapper"><strong class="notif-wording_channel-name">$<channel></strong>: $<title></span>`);
+                el.innerHTML = el.innerHTML.replace(langs[siteLang].live,         `<span class="notif-wording_wrapper">🔴 <strong class="notif-wording_channel-name">$<channel></strong>: $<title></span>`);
+                el.innerHTML = el.innerHTML.replace(langs[siteLang].premiere,     `<span class="notif-wording_wrapper">🎦 <strong class="notif-wording_channel-name">$<channel></strong>: $<title></span>`); // Alternative emojis: 🗓️📹
+                // el.innerHTML = el.innerHTML.replace(langs[siteLang].commentReply, `<span class="notif-wording_wrapper">💬 <strong class="notif-wording_channel-name">$<channel></strong>: $<title></span>`);
 
                 // Youtube goes crazy when the notification text gets changed, and adds text from different notifications to existing notification elements. This works around that.
                 if (el.children.length > 1) {
