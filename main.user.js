@@ -14,18 +14,16 @@
     'use strict';
 
     const langs = {
+        // The span stuff in the regexes prevents a bug where the notification text would get replaced recursively
         pl: {
-            video: /Na kanał (?<channel>.*?) został przesłany film (?<title>.*)/,
-            // Youtube goes crazy when the notification text gets changed,
-            // and adds text from different notifications to existing notification elements.
-            // The span stuff works around that.
-            live: /(?:.*<\/span>)*(?<channel>.*?) nadaje: (?<title>.*)/,
-            premiere: /Na kanale (?<channel>.*?) trwa premiera filmu: (?<title>.*)/,
+            video: /(?:.*<\/span>)?Na kanał (?<channel>.*?) został przesłany film (?<title>.*)/,
+            live: /(?:.*<\/span>)?(?<channel>.*?) nadaje: (?<title>.*)/,
+            premiere: /(?:.*<\/span>)?Na kanale (?<channel>.*?) trwa premiera filmu: (?<title>.*)/,
         },
         en: {
-            video: /(?<channel>.*?) uploaded: (?<title>.*)/,
-            live: /(?:.*<\/span>)*(?<channel>.*?) is live: (?<title>.*)/,
-            premiere: /(?<channel>.*?) premiering now: (?<title>.*)/,
+            video: /(?:.*<\/span>)?(?<channel>.*?) uploaded: (?<title>.*)/,
+            live: /(?:.*<\/span>)?(?<channel>.*?) is live: (?<title>.*)/,
+            premiere: /(?:.*<\/span>)?(?<channel>.*?) premiering now: (?<title>.*)/,
         },
     };
 
@@ -62,8 +60,7 @@ html[dark="true"] .notif-wording_channel-name {
                 new MutationObserver((mutations, observer) => {
                     console.log("style mutation");
                     if (listWrapper.style.display === "none") {
-                        // Surprisingly  removing the HTML works.
-                        // When the drop down reopens youtube figures everything out and fills it with notifications.
+                        // Surprisingly  removing the HTML works. JK it doesn't
                         list.querySelector("#items").innerHTML = "";
                         styleObserverActive = false;
                         observer.disconnect();
@@ -83,9 +80,9 @@ html[dark="true"] .notif-wording_channel-name {
                     }
                 }
 
-                el.innerHTML = el.innerHTML.replace(langs[siteLang].video,    `<span><strong class="notif-wording_channel-name">$<channel></strong>: $<title></span>`);
-                el.innerHTML = el.innerHTML.replace(langs[siteLang].live,     `<span>🔴 <strong class="notif-wording_channel-name">$<channel></strong>: $<title></span>`);
-                el.innerHTML = el.innerHTML.replace(langs[siteLang].premiere, `<span>🎦 <strong class="notif-wording_channel-name">$<channel></strong>: $<title></span>`); // Alternative emojis: 🗓️📹
+                el.innerHTML = el.innerHTML.replace(langs[siteLang].video,    `<span class="notif-wording_wrapper"><strong class="notif-wording_channel-name">$<channel></strong>: $<title></span>`);
+                el.innerHTML = el.innerHTML.replace(langs[siteLang].live,     `<span class="notif-wording_wrapper">🔴 <strong class="notif-wording_channel-name">$<channel></strong>: $<title></span>`);
+                el.innerHTML = el.innerHTML.replace(langs[siteLang].premiere, `<span class="notif-wording_wrapper">🎦 <strong class="notif-wording_channel-name">$<channel></strong>: $<title></span>`); // Alternative emojis: 🗓️📹
 
                 // Youtube goes crazy when the notification text gets changed, and adds text from different notifications to existing notification elements. This works around that.
                 if (el.children.length > 1) {
