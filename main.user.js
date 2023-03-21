@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Change notification wording
 // @namespace    https://github.com/tomasz13nocon
-// @version      1.1
+// @version      1.2
 // @description  Replace sentence-like wording from yt notifications with predictable, readable-at-a-glance text.
 // @author       Tomasz Nocoń
 // @match        https://www.youtube.com/*
@@ -23,7 +23,7 @@
             commentReply: /(?:.*<\/span>)?(?<user>.*?) odpowiedział\(a\): (?<comment>.*)/,
             commentLike:  /(?:.*<\/span>)?👍 Ktoś polubił Twój komentarz: (?<comment>.*)/,
         },
-        "en": {
+        "en-GB": {
             video:        /(?:.*<\/span>)?(?<channel>.*?) uploaded: (?<title>.*)/,
             live:         /(?:.*<\/span>)?(?<channel>.*?) is live: (?<title>.*)/,
             premiere:     /(?:.*<\/span>)?(?<channel>.*?) premiering now: (?<title>.*)/,
@@ -41,7 +41,7 @@
     document.head.insertAdjacentHTML("beforeend",
 `<style>
 .notif-wording_channel-name {
-    color: var(--yt-spec-text-primary);
+    color: #c0cbf7; /* var(--yt-spec-text-primary); */
 }
 html[dark="true"] .notif-wording_channel-name {
     color: #99a;
@@ -83,8 +83,8 @@ html[dark="true"] .notif-wording_channel-name {
                 el.innerHTML = el.innerHTML.replace(langs[siteLang].video,        `<span class="notif-wording_wrapper"><strong class="notif-wording_channel-name">$<channel></strong>: $<title></span>`);
                 el.innerHTML = el.innerHTML.replace(langs[siteLang].live,         `<span class="notif-wording_wrapper">🔴 <strong class="notif-wording_channel-name">$<channel></strong>: $<title></span>`);
                 el.innerHTML = el.innerHTML.replace(langs[siteLang].premiere,     `<span class="notif-wording_wrapper">🎦 <strong class="notif-wording_channel-name">$<channel></strong>: $<title></span>`); // Alternative emojis: 🗓️📹
-                // el.innerHTML = el.innerHTML.replace(langs[siteLang].commentReply, `<span class="notif-wording_wrapper">💬 <strong class="notif-wording_channel-name">$<user></strong>: $<comment></span>`);
-                // el.innerHTML = el.innerHTML.replace(langs[siteLang].commentLike,  `<span class="notif-wording_wrapper">💬👍 $<comment></span>`);
+                el.innerHTML = el.innerHTML.replace(langs[siteLang].commentReply, `<span class="notif-wording_wrapper">💬 <strong class="notif-wording_channel-name">$<user></strong>: $<comment></span>`);
+                el.innerHTML = el.innerHTML.replace(langs[siteLang].commentLike,  `<span class="notif-wording_wrapper">💬👍 $<comment></span>`);
 
                 // Youtube goes crazy when the notification text gets changed, and adds text from different notifications to existing notification elements. This works around that.
                 if (el.children.length > 1) {
@@ -112,3 +112,4 @@ html[dark="true"] .notif-wording_channel-name {
     }
 
 })();
+
