@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Change notification wording
 // @namespace    https://github.com/tomasz13nocon
-// @version      1.2
+// @version      1.2.1
 // @description  Replace sentence-like wording from yt notifications with predictable, readable-at-a-glance text.
 // @author       Tomasz Nocoń
 // @match        https://www.youtube.com/*
@@ -17,6 +17,7 @@
         // The span stuff in the regexes prevents a bug where the notification text would get replaced recursively
         // The key must correspond to the lang attribute on the html tag
         "pl-PL": {
+            notifTitleText: "Powiadomienia",
             video:        /(?:.*<\/span>)?Na kanał (?<channel>.*?) został przesłany film (?<title>.*)/,
             live:         /(?:.*<\/span>)?(?<channel>.*?) nadaje: (?<title>.*)/,
             premiere:     /(?:.*<\/span>)?Na kanale (?<channel>.*?) trwa premiera filmu: (?<title>.*)/,
@@ -24,6 +25,7 @@
             commentLike:  /(?:.*<\/span>)?👍 Ktoś polubił Twój komentarz: (?<comment>.*)/,
         },
         "en-GB": {
+            notifTitleText: "Notifications",
             video:        /(?:.*<\/span>)?(?<channel>.*?) uploaded: (?<title>.*)/,
             live:         /(?:.*<\/span>)?(?<channel>.*?) is live: (?<title>.*)/,
             premiere:     /(?:.*<\/span>)?(?<channel>.*?) premiering now: (?<title>.*)/,
@@ -33,13 +35,12 @@
     };
 
     let siteLang = document.getElementsByTagName("html")[0].getAttribute("lang");
-    if (!(siteLang in langs)) {
+    if (!(siteLang in langs)) { 
         console.error(`Language ${siteLang} is not supported.`);
         return;
     }
 
-    document.head.insertAdjacentHTML("beforeend",
-`<style>
+    document.head.insertAdjacentHTML("beforeend", `<style>
 .notif-wording_channel-name {
     color: #c0cbf7; /* var(--yt-spec-text-primary); */
 }
@@ -53,6 +54,9 @@ html[dark="true"] .notif-wording_channel-name {
         let styleObserverActive = false;
 
         new MutationObserver((mutations, observer) => {
+            // If the popup is not a notification popup, abort
+            if (!list.innerText.startsWith(langs[siteLang].notifTitleText)) return;
+
             if (weMutatedDom) {
                 weMutatedDom = false;
                 return;
@@ -112,4 +116,5 @@ html[dark="true"] .notif-wording_channel-name {
     }
 
 })();
+
 
